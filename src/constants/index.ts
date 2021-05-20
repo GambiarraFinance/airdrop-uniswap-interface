@@ -24,6 +24,22 @@ export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export { PRELOADED_PROPOSALS } from './proposals'
 
+//CFXQ_AIRDROP_ADDRESS
+//change to mainnet address
+export const CFXQ_AIRDROP_ADDRESS: { [chainId in ChainId]?: string } = {
+  [ChainId.MAINNET]: '',
+  [ChainId.ROPSTEN]: '0x08Ed2beD63A7a127d95F3Da455e79674553d90bD',
+}
+
+const CFXQ_ADDRESS = '0xb0e7b50d9d21e47d51b74eff48a44bf09717d215'
+export const CFXQ: { [chainId in ChainId]: Token } = {
+  [ChainId.MAINNET]: new Token(ChainId.MAINNET, CFXQ_ADDRESS, 18, 'CFXQ', 'CFXQ'),
+  [ChainId.RINKEBY]: new Token(ChainId.RINKEBY, CFXQ_ADDRESS, 18, 'CFXQ', 'CFXQ'),
+  [ChainId.ROPSTEN]: new Token(ChainId.ROPSTEN, CFXQ_ADDRESS, 18, 'TESTA', 'TestTokenA'),
+  [ChainId.GÖRLI]: new Token(ChainId.GÖRLI, CFXQ_ADDRESS, 18, 'CFXQ', 'CFXQ'),
+  [ChainId.KOVAN]: new Token(ChainId.KOVAN, CFXQ_ADDRESS, 18, 'CFXQ', 'CFXQ'),
+}
+
 // a list of tokens by chain
 type ChainTokenList = {
   readonly [chainId in ChainId]: Token[]

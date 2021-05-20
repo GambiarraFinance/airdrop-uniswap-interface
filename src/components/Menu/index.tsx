@@ -162,7 +162,7 @@ export default function Menu() {
           </MenuItem>
           {account && (
             <UNIbutton onClick={openClaimModal} padding="8px 16px" width="100%" borderRadius="12px" mt="0.5rem">
-              Claim UNI
+              Claim CFXQ
             </UNIbutton>
           )}
         </MenuFlyout>

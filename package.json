@@ -143,5 +143,7 @@
     ]
   },
   "license": "GPL-3.0-or-later",
-  "dependencies": {}
+  "dependencies": {
+    "react-use": "^17.2.4"
+  }
 }

@@ -4,6 +4,7 @@ import { abi as GOVERNANCE_ABI } from '@uniswap/governance/build/GovernorAlpha.j
 import { abi as UNI_ABI } from '@uniswap/governance/build/Uni.json'
 import { abi as STAKING_REWARDS_ABI } from '@uniswap/liquidity-staker/build/StakingRewards.json'
 import { abi as MERKLE_DISTRIBUTOR_ABI } from '@uniswap/merkle-distributor/build/MerkleDistributor.json'
+import CFXQ_AIRDROP_ABI from 'abis/cfxq_airdrop.json'
 import { abi as IUniswapV2PairABI } from '@uniswap/v2-core/build/IUniswapV2Pair.json'
 import { abi as V3FactoryABI } from '@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json'
 import { abi as V3PoolABI } from '@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json'
@@ -27,6 +28,7 @@ import EIP_2612 from 'abis/eip_2612.json'
 import {
   ARGENT_WALLET_DETECTOR_MAINNET_ADDRESS,
   GOVERNANCE_ADDRESS,
+  CFXQ_AIRDROP_ADDRESS,
   MERKLE_DISTRIBUTOR_ADDRESS,
   V1_MIGRATOR_ADDRESS,
   UNI,
@@ -133,9 +135,10 @@ export function useMulticall2Contract(): Multicall2 | null {
   return useContract(chainId && MULTICALL2_ADDRESSES[chainId], MULTICALL_ABI, false) as Multicall2
 }
 
+// CFXQ Distribution
 export function useMerkleDistributorContract(): Contract | null {
   const { chainId } = useActiveWeb3React()
-  return useContract(chainId ? MERKLE_DISTRIBUTOR_ADDRESS[chainId] : undefined, MERKLE_DISTRIBUTOR_ABI, true)
+  return useContract(chainId ? CFXQ_AIRDROP_ADDRESS[chainId] : undefined, CFXQ_AIRDROP_ABI, true)
 }
 
 export function useGovernanceContract(): Contract | null {

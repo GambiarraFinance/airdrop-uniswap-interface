@@ -36,7 +36,7 @@ const ConfirmOrLoadingWrapper = styled.div<{ activeBG: boolean }>`
   position: relative;
   background: ${({ activeBG }) =>
     activeBG &&
-    'radial-gradient(76.02% 75.41% at 1.84% 0%, rgba(255, 0, 122, 0.2) 0%, rgba(33, 114, 229, 0.2) 100%), #FFFFFF;'};
+    'radial-gradient(76.02% 75.41% at 1.84% 0%, rgba(253, 99, 91, 0.2) 0%, rgba(97, 0, 125, 0.2) 100%), #FFFFFF;'};
 `
 
 const ConfirmedIcon = styled(ColumnCenter)`
@@ -44,7 +44,8 @@ const ConfirmedIcon = styled(ColumnCenter)`
 `
 
 const SOCKS_AMOUNT = 1000
-const USER_AMOUNT = 400
+const USER_AMOUNT = 1000
+const CFX_AMOUNT = 50
 
 export default function ClaimModal() {
   const isOpen = useModalOpen(ApplicationModal.SELF_CLAIM)
@@ -84,11 +85,6 @@ export default function ClaimModal() {
     }
   }, [attempting, claimConfirmed, claimSubmitted, isOpen, toggleClaimModal])
 
-  const nonLPAmount = JSBI.multiply(
-    JSBI.BigInt((userClaimData?.flags?.isSOCKS ? SOCKS_AMOUNT : 0) + (userClaimData?.flags?.isUser ? USER_AMOUNT : 0)),
-    JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(18))
-  )
-
   return (
     <Modal isOpen={isOpen} onDismiss={toggleClaimModal} maxHeight={90}>
       <Confetti start={Boolean(isOpen && claimConfirmed)} />
@@ -99,46 +95,20 @@ export default function ClaimModal() {
             <CardNoise />
             <CardSection gap="md">
               <RowBetween>
-                <TYPE.white fontWeight={500}>Claim UNI</TYPE.white>
+                <TYPE.white fontWeight={500}>Claim CFXQ</TYPE.white>
                 <CloseIcon onClick={toggleClaimModal} style={{ zIndex: 99 }} color="white" />
               </RowBetween>
               <TYPE.white fontWeight={700} fontSize={36}>
-                {unclaimedAmount?.toFixed(0, { groupSeparator: ',' } ?? '-')} UNI
+                {unclaimedAmount?.toFixed(CFX_AMOUNT, { groupSeparator: ',' } ?? '-')} CFXQ
               </TYPE.white>
             </CardSection>
             <Break />
-            <CardSection gap="sm">
-              {userClaimData?.flags?.isSOCKS && (
-                <RowBetween>
-                  <TYPE.subHeader color="white">SOCKS</TYPE.subHeader>
-                  <TYPE.subHeader color="white">{SOCKS_AMOUNT} UNI</TYPE.subHeader>
-                </RowBetween>
-              )}
-              {userClaimData?.flags?.isLP &&
-                unclaimedAmount &&
-                JSBI.greaterThanOrEqual(unclaimedAmount.raw, nonLPAmount) && (
-                  <RowBetween>
-                    <TYPE.subHeader color="white">Liquidity</TYPE.subHeader>
-                    <TYPE.subHeader color="white">
-                      {unclaimedAmount
-                        .subtract(new TokenAmount(unclaimedAmount.token, nonLPAmount))
-                        .toFixed(0, { groupSeparator: ',' })}{' '}
-                      UNI
-                    </TYPE.subHeader>
-                  </RowBetween>
-                )}
-              {userClaimData?.flags?.isUser && (
-                <RowBetween>
-                  <TYPE.subHeader color="white">User</TYPE.subHeader>
-                  <TYPE.subHeader color="white">{USER_AMOUNT} UNI</TYPE.subHeader>
-                </RowBetween>
-              )}
-            </CardSection>
           </ModalUpper>
           <AutoColumn gap="md" style={{ padding: '1rem', paddingTop: '0' }} justify="center">
             <TYPE.subHeader fontWeight={500}>
-              As a member of the Uniswap community you may claim UNI to be used for voting and governance. <br /> <br />
-              <ExternalLink href="https://uniswap.org/blog/uni">Read more about UNI</ExternalLink>
+              As a member of the Uniswap community you may claim CFXQ to be used for voting and governance. <br />{' '}
+              <br />
+              <ExternalLink href="https://uniswap.org/blog/uni">Read more about CFXQ</ExternalLink>
             </TYPE.subHeader>
             <ButtonPrimary
               disabled={!isAddress(account ?? '')}
@@ -148,7 +118,7 @@ export default function ClaimModal() {
               mt="1rem"
               onClick={onClaim}
             >
-              Claim UNI
+              Claim CFXQ
             </ButtonPrimary>
           </AutoColumn>
         </ContentWrapper>
@@ -175,7 +145,7 @@ export default function ClaimModal() {
               </TYPE.largeHeader>
               {!claimConfirmed && (
                 <Text fontSize={36} color={'#ff007a'} fontWeight={800}>
-                  {unclaimedAmount?.toFixed(0, { groupSeparator: ',' } ?? '-')} UNI
+                  {unclaimedAmount?.toFixed(0, { groupSeparator: ',' } ?? '-')} CFX
                 </Text>
               )}
             </AutoColumn>

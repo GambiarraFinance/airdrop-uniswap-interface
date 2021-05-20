@@ -1,4 +1,4 @@
-import { UNI } from './../../constants/index'
+import { CFXQ } from './../../constants/index'
 import { JSBI } from '@uniswap/v2-sdk'
 import { TokenAmount, ChainId } from '@uniswap/sdk-core'
 import { TransactionResponse } from '@ethersproject/providers'
@@ -11,33 +11,25 @@ import { useTransactionAdder } from '../transactions/hooks'
 
 interface UserClaimData {
   index: number
-  amount: string
+  amount: number
   proof: string[]
-  flags?: {
-    isSOCKS: boolean
-    isLP: boolean
-    isUser: boolean
-  }
+  address: string
 }
 
-const CLAIM_PROMISES: { [key: string]: Promise<UserClaimData | null> } = {}
+// const CLAIM_PROMISES: { [key: string]: Promise<UserClaimData | null> } = {}
+
+const CLAIM_CFX: { [address: string]: Promise<UserClaimData | null> } = {}
 
 // returns the claim for the given address, or null if not valid
+// this data coming
 function fetchClaim(account: string, chainId: ChainId): Promise<UserClaimData | null> {
   const formatted = isAddress(account)
   if (!formatted) return Promise.reject(new Error('Invalid address'))
   const key = `${chainId}:${account}`
-
-  return (CLAIM_PROMISES[key] =
-    CLAIM_PROMISES[key] ??
-    fetch('https://merkle-drop-1.uniswap.workers.dev/', {
-      body: JSON.stringify({ chainId, address: formatted }),
-      headers: {
-        'Content-Type': 'application/json',
-        'Referrer-Policy': 'no-referrer',
-      },
-      method: 'POST',
-    })
+  const accountCFX = account
+  return (CLAIM_CFX[accountCFX] =
+    CLAIM_CFX[accountCFX] ??
+    fetch(`http://localhost:7700/user/${formatted}`)
       .then((res) => (res.ok ? res.json() : console.log(`No claim for account ${formatted} on chain ID ${chainId}`)))
       .catch((error) => console.error('Failed to get claim data', error)))
 }
@@ -47,8 +39,9 @@ function fetchClaim(account: string, chainId: ChainId): Promise<UserClaimData | 
 export function useUserClaimData(account: string | null | undefined): UserClaimData | null | undefined {
   const { chainId } = useActiveWeb3React()
 
-  const key = `${chainId}:${account}`
-  const [claimInfo, setClaimInfo] = useState<{ [key: string]: UserClaimData | null }>({})
+  // const key = `${chainId}:${account}`
+  const accountCFX = account
+  const [claimInfo, setClaimInfo] = useState<{ [account: string]: UserClaimData | null }>({})
 
   useEffect(() => {
     if (!account || !chainId) return
@@ -56,22 +49,29 @@ export function useUserClaimData(account: string | null | undefined): UserClaimD
       setClaimInfo((claimInfo) => {
         return {
           ...claimInfo,
-          [key]: accountClaimInfo,
+          [account]: accountClaimInfo,
         }
       })
     )
-  }, [account, chainId, key])
+  }, [account, chainId])
 
-  return account && chainId ? claimInfo[key] : undefined
+  return account && chainId ? claimInfo[account] : undefined
 }
 
-// check if user is in blob and has not yet claimed UNI
+// check if user is in blob and has not yet claimed CFX
 export function useUserHasAvailableClaim(account: string | null | undefined): boolean {
   const userClaimData = useUserClaimData(account)
   const distributorContract = useMerkleDistributorContract()
-  const isClaimedResult = useSingleCallResult(distributorContract, 'isClaimed', [userClaimData?.index])
+  const isCheckClaimed = useSingleCallResult(distributorContract, 'check', [
+    userClaimData?.index,
+    userClaimData?.address,
+    userClaimData?.amount,
+    userClaimData?.proof,
+  ])
+
+  // const isCheckClaimed = useSingleCallResult(distributorContract, 'check', [account, userClaimData?.index])
   // user is in blob and contract marks as unclaimed
-  return Boolean(userClaimData && !isClaimedResult.loading && isClaimedResult.result?.[0] === false)
+  return Boolean(userClaimData && !isCheckClaimed.loading && isCheckClaimed.result?.available === true)
 }
 
 export function useUserUnclaimedAmount(account: string | null | undefined): TokenAmount | undefined {
@@ -79,12 +79,12 @@ export function useUserUnclaimedAmount(account: string | null | undefined): Toke
   const userClaimData = useUserClaimData(account)
   const canClaim = useUserHasAvailableClaim(account)
 
-  const uni = chainId ? UNI[chainId] : undefined
-  if (!uni) return undefined
+  const cfxq = chainId ? CFXQ[chainId] : undefined
+  if (!cfxq) return undefined
   if (!canClaim || !userClaimData) {
-    return new TokenAmount(uni, JSBI.BigInt(0))
+    return new TokenAmount(cfxq, JSBI.BigInt(0))
   }
-  return new TokenAmount(uni, JSBI.BigInt(userClaimData.amount))
+  return new TokenAmount(cfxq, JSBI.BigInt(userClaimData?.amount))
 }
 
 export function useClaimCallback(
@@ -98,20 +98,21 @@ export function useClaimCallback(
 
   // used for popup summary
   const unclaimedAmount: TokenAmount | undefined = useUserUnclaimedAmount(account)
+  console.log(unclaimedAmount)
   const addTransaction = useTransactionAdder()
   const distributorContract = useMerkleDistributorContract()
 
   const claimCallback = async function () {
     if (!claimData || !account || !library || !chainId || !distributorContract) return
 
-    const args = [claimData.index, account, claimData.amount, claimData.proof]
+    const args = [claimData.index, claimData.amount, claimData.proof]
 
     return distributorContract.estimateGas['claim'](...args, {}).then((estimatedGasLimit) => {
       return distributorContract
         .claim(...args, { value: null, gasLimit: calculateGasMargin(estimatedGasLimit) })
         .then((response: TransactionResponse) => {
           addTransaction(response, {
-            summary: `Claimed ${unclaimedAmount?.toSignificant(4)} UNI`,
+            summary: `Claimed ${unclaimedAmount?.toSignificant(4)} CFXQ`,
             claim: { recipient: account },
           })
           return response.hash

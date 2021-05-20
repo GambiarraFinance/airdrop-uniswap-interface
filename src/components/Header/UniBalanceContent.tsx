@@ -4,6 +4,7 @@ import { X } from 'react-feather'
 import styled from 'styled-components'
 import tokenLogo from '../../assets/images/token-logo.png'
 import { UNI } from '../../constants'
+import { CFXQ } from '../../constants'
 import { useTotalSupply } from '../../hooks/useTotalSupply'
 import { useActiveWeb3React } from '../../hooks'
 import { useMerkleDistributorContract } from '../../hooks/useContract'
@@ -42,22 +43,22 @@ const StyledClose = styled(X)`
  */
 export default function UniBalanceContent({ setShowUniBalanceModal }: { setShowUniBalanceModal: any }) {
   const { account, chainId } = useActiveWeb3React()
-  const uni = chainId ? UNI[chainId] : undefined
+  const cfxq = chainId ? CFXQ[chainId] : undefined
 
   const total = useAggregateUniBalance()
-  const uniBalance: TokenAmount | undefined = useTokenBalance(account ?? undefined, uni)
+  const uniBalance: TokenAmount | undefined = useTokenBalance(account ?? undefined, cfxq)
   const uniToClaim: TokenAmount | undefined = useTotalUniEarned()
 
-  const totalSupply: TokenAmount | undefined = useTotalSupply(uni)
-  const uniPrice = useUSDCPrice(uni)
+  const totalSupply: TokenAmount | undefined = useTotalSupply(cfxq)
+  const uniPrice = useUSDCPrice(cfxq)
   const blockTimestamp = useCurrentBlockTimestamp()
-  const unclaimedUni = useTokenBalance(useMerkleDistributorContract()?.address, uni)
+  const unclaimedUni = useTokenBalance(useMerkleDistributorContract()?.address, cfxq)
   const circulation: TokenAmount | undefined = useMemo(
     () =>
-      blockTimestamp && uni && chainId === ChainId.MAINNET
-        ? computeUniCirculation(uni, blockTimestamp, unclaimedUni)
+      blockTimestamp && cfxq && chainId === ChainId.MAINNET
+        ? computeUniCirculation(cfxq, blockTimestamp, unclaimedUni)
         : totalSupply,
-    [blockTimestamp, chainId, totalSupply, unclaimedUni, uni]
+    [blockTimestamp, chainId, totalSupply, unclaimedUni, cfxq]
   )
 
   return (
@@ -67,7 +68,7 @@ export default function UniBalanceContent({ setShowUniBalanceModal }: { setShowU
         <CardNoise />
         <CardSection gap="md">
           <RowBetween>
-            <TYPE.white color="white">Your UNI Breakdown</TYPE.white>
+            <TYPE.white color="white">Your CFXQ Breakdown</TYPE.white>
             <StyledClose stroke="white" onClick={() => setShowUniBalanceModal(false)} />
           </RowBetween>
         </CardSection>
@@ -105,19 +106,19 @@ export default function UniBalanceContent({ setShowUniBalanceModal }: { setShowU
         <CardSection gap="sm">
           <AutoColumn gap="md">
             <RowBetween>
-              <TYPE.white color="white">UNI price:</TYPE.white>
+              <TYPE.white color="white">CFXQ price:</TYPE.white>
               <TYPE.white color="white">${uniPrice?.toFixed(2) ?? '-'}</TYPE.white>
             </RowBetween>
             <RowBetween>
-              <TYPE.white color="white">UNI in circulation:</TYPE.white>
+              <TYPE.white color="white">CFXQ in circulation:</TYPE.white>
               <TYPE.white color="white">{circulation?.toFixed(0, { groupSeparator: ',' })}</TYPE.white>
             </RowBetween>
             <RowBetween>
               <TYPE.white color="white">Total Supply</TYPE.white>
               <TYPE.white color="white">{totalSupply?.toFixed(0, { groupSeparator: ',' })}</TYPE.white>
             </RowBetween>
-            {uni && uni.chainId === ChainId.MAINNET ? (
-              <ExternalLink href={`https://info.uniswap.org/token/${uni.address}`}>View UNI Analytics</ExternalLink>
+            {cfxq && cfxq.chainId === ChainId.MAINNET ? (
+              <ExternalLink href={`https://info.uniswap.org/token/${cfxq.address}`}>View CFXQ Analytics</ExternalLink>
             ) : null}
           </AutoColumn>
         </CardSection>
